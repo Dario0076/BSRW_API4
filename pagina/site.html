@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mantenimiento de Banco</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .form-group button {
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        .form-group button:hover {
+            background-color: #0056b3;
+        }
+        .bank-list, .payment-methods-list {
+            margin-top: 20px;
+        }
+        .bank-item, .payment-method-item {
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mantenimiento de Banco</h1>
+        <div class="form-group">
+            <label for="bankName">Nombre del Banco:</label>
+            <input type="text" id="bankName">
+        </div>
+        <div class="form-group">
+            <label for="bankInfo">Información del Banco:</label>
+            <input type="text" id="bankInfo">
+        </div>
+        <div class="form-group">
+            <button onclick="registerBank()">Registrar Banco</button>
+            <button onclick="updateBank()">Actualizar Banco</button>
+            <button onclick="deleteBank()">Eliminar Banco</button>
+        </div>
+        <div class="form-group">
+            <button onclick="getBanks()">Consultar Bancos</button>
+            <button onclick="getPaymentMethods()">Consultar Formas de Pago</button>
+        </div>
+        <div class="bank-list" id="bankList"></div>
+        <div class="payment-methods-list" id="paymentMethodsList"></div>
+    </div>
+
+    <script>
+        async function registerBank() {
+            const bankName = document.getElementById('bankName').value;
+            const bankInfo = document.getElementById('bankInfo').value;
+
+            const response = await fetch('/crearBanco', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nombre: bankName, sucursal: bankInfo, formasPago: [] })
+            });
+
+            const data = await response.json();
+            console.log('Registrar Banco:', data);
+        }
+
+        async function updateBank() {
+            const bankId = prompt('Ingrese el ID del banco a actualizar:');
+            const bankName = document.getElementById('bankName').value;
+            const bankInfo = document.getElementById('bankInfo').value;
+
+            const response = await fetch(`/actualizarBanco/${bankId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nombre: bankName, sucursal: bankInfo, formasPago: [] })
+            });
+
+            const data = await response.json();
+            console.log('Actualizar Banco:', data);
+        }
+
+        async function deleteBank() {
+            const bankId = prompt('Ingrese el ID del banco a eliminar:');
+
+            const response = await fetch(`/eliminarBanco/${bankId}`, {
+                method: 'DELETE'
+            });
+
+            const data = await response.json();
+            console.log('Eliminar Banco:', data);
+        }
+
+        async function getBanks() {
+            const response = await fetch('/obtenerBancos');
+            const data = await response.json();
+
+            const bankList = document.getElementById('bankList');
+            bankList.innerHTML = '';
+
+            data.forEach(bank => {
+                const bankItem = document.createElement('div');
+                bankItem.className = 'bank-item';
+                bankItem.textContent = `ID: ${bank.id}, Nombre: ${bank.nombre}, Sucursal: ${bank.sucursal}`;
+                bankList.appendChild(bankItem);
+            });
+
+            console.log('Consultar Bancos:', data);
+        }
+
+        async function getPaymentMethods() {
+            const response = await fetch('/obtenerFormasPago');
+            const data = await response.json();
+
+            const paymentMethodsList = document.getElementById('paymentMethodsList');
+            paymentMethodsList.innerHTML = '';
+
+            data.forEach(method => {
+                const methodItem = document.createElement('div');
+                methodItem.className = 'payment-method-item';
+                methodItem.textContent = `ID: ${method.id}, Método: ${method.metodo}`;
+                paymentMethodsList.appendChild(methodItem);
+            });
+
+            console.log('Consultar Formas de Pago:', data);
+        }
+    </script>
+</body>
+</html>
